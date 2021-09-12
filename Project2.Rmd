@@ -1,0 +1,450 @@
+---
+title: "Introduction to Data Wrangling: Tutorial Using R"
+author: "By Ismah Ahmed"
+date: "3 April 2020"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(learnr)
+tutorial_options(exercise.eval = TRUE)
+```
+
+
+#  Data Wranging Tutorial 
+
+##Welcome
+
+In this tutorial we will learn about the different components in Data Wrangling using R. We will be learning about the process of data wrangling as well as learning how to manipulate and organize data. We will be following the process of data wrangling using the dataset college_recent_grads from the fivethirtyeight package. You can learn more about this data set in the story ["The Economic Guide To Picking A College Major"](https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/).
+
+###Loading Packages
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(fivethirtyeight)
+library(ggthemes)
+```
+
+- `tidyverse`: load this package to use ggplot2 (which will allow us to create graphics and data visualizations) and dplyr (which will allow us to use a certain grammer in our code for data manipulation)
+
+- `fivethirtyeight`: we will be using data, college_recent_grads, from the fivethirtyeight package
+
+###dplr
+
+We will be using the library `dplR` which automaticaly loads if you download and run the package tidyverse. To learn more about tidyverse and the packages in tidyverse, click [here](https://www.tidyverse.org).
+
+dplyr provides a grammer for us to use in data manupulation. We will be using the verbs/functions that dyplr provides us for data wrangling. Some of the verbs include select(), filter(), mutate(), arrange(), summarize(), group_by(), count() and distinct(). You will learn more about these verbs and how to use them throughout this tutorial.  
+
+###college_recent_grads
+
+Throughout this tutorial, we will consistently be using the data set *college_recent_grads* from the *fivethirtyeight* package. The *fivethirtyeight* package has several different data sets open to use, to learn more click [here](https://cran.r-project.org/web/packages/fivethirtyeight/fivethirtyeight.pdf)
+
+I have listed below the descriptions of each variable in the data set,*college_recent_grads*, we will be using:
+
+- **rank**: rank of majors based on median income
+- **major_code**: the major code associated with each major
+- **major**: major name
+- **major_category**: each major falls within one of the 16 major categories
+- **total**: Total number of people with major
+- **sample_size**: sample size of full-time year round students who graduated
+- **men**: number of men in certain major
+- **women**: number of women in certain major
+- **sharewomen**: proportion of women in each major
+- **employed**: number employed in each major
+- **employed_fulltime**: number employed fulltime
+- **employed_parttime**: number employed parttime
+- **employed_fulltime_yearround**: number emplyed full time year round
+- **unemployed**: number unemployed
+- **p25th**: 25th percentile of earnings
+- **median**: median earnings of full-time, year-round workers
+- **p75th**: 75th percentile of earnings
+- **college_jobs**: number of individuals in a job requiring a college degree 
+- **non_college_jobs**: number of people in a job that does not require a college degree
+- **low_wage_jobs**: number of people in a low wage job
+
+There are alot of things we can collect from this data based on the amount of quantitative data we have for the majors and major categories. *Some* questions you may be able to answer through data wrangling (specific to this data set) are:
+
+- How many majors are there per major category?
+- What are the proportions of women in each major category? Is there a particular major category with more women than others?
+- What is the major with the highest median income? What is the major category with the highest median income?
+- Can we create a visualization of the distribution of men and women across majors and major categories? 
+
+##Grammer
+
+###In the `dplyr` package, some of the functions that allow us to transform data are listed below:
+
+- `select()` : used to select columns in a data set
+- `filter()` : used to filter rows
+- `mutate()` : used to create new columns in our dataset
+- `arrange()` : used to re-order/arrange rows
+- `summarize()` : used to summarize values
+- `group_by()` : used for group operations
+- `count()` : used to count the number of occurances
+- `distinct()` : used to display unique rows
+
+**Note:** We will be using the "pipe operator", **%>%**, which will allow us to connect and add layers in our data manipulation and collection. 
+
+###select() example
+
+We will be using the pipe operator to connect the data set to the verb(s) we are using. 
+
+Using the select()` verb to select the columns major_code and major:
+
+```{r, excercise = TRUE}
+college_recent_grads %>%
+  select(major_code, major) %>%
+  head(5) #shows use first 5 values in data set
+```
+
+What did we get from using the select() function? We can see clearly see the list of majors and the correspoding major code. 
+
+###filter() example
+
+Using the `filter()` verb to filter rows where the major category is Engineering
+
+```{r}
+college_recent_grads %>%
+  filter(major_category=="Engineering") %>%
+  head(5) #shows use first 5 values in data set
+```
+
+If we were to do data visualizations on Engineering majors, it is important to use the filter() function to filter the rows that include majors under the Engineering major category. 
+
+###mutate() example
+Using the `mutate()` verb to create a new column "employment_percent" which will be the percent employed in the total:
+
+```{r}
+college_recent_grads %>%
+  mutate(employment_percent = employed/total)%>%
+  head(5)
+```
+
+mutate() can come in handy when if you want to create a specific variable you want to include in a data visualization. In this example, we learn how to create the variable employment percentage. 
+
+###arrange() example
+
+Using `arrange()` to order by 'total', this function automatically arranges in ascending order:
+
+```{r}
+college_recent_grads %>%
+  arrange(total)%>%
+  head(5)
+```
+
+Arranging your data can come in handy if you want to see how your data looks in order. If you want to arrage the data in decending order, do this:
+
+```{r}
+college_recent_grads %>%
+  arrange(desc(total))%>%
+  head(5)
+```
+
+Now that you have it in decending order and you used the head() function, you can clearly see the top 5 majors with the most students.
+
+###summarize() example
+Using `summarize()` and `group_by()` to get the mean median income of each major category:
+
+```{r}
+college_recent_grads %>%
+  group_by(major_category) %>%
+  summarize(mean_median_income = mean(median, na.rm = TRUE)) %>%
+  head(5)
+```
+
+We often use summarize with group by, this is to make comparative calculations. You can use the following in summarize:
+
+- `mean()`
+- `sd()`
+- `median()`
+- `IQR()`
+- `max()`
+- `n()`
+- *...and more!*
+
+
+###count() example
+Using `count()` to display how majors are in each major category
+
+```{r}
+college_recent_grads %>%
+  count(major_category)
+```
+
+count() can use to count categorical variables. in this case we are curious to see how much majors are in each major category. We can use this later to create data visuals to see which major categories have the most/least majors in a barplot!
+
+###distinct() example
+
+Using `distinct()` to display the list of unique majors
+
+```{r}
+college_recent_grads %>%
+  distinct(major)
+```
+
+###The Pipe Operator
+
+The pipe operator is used to pipe the different expressions and lines of code in order to get an output you need. For example, below we are using the pipe operator to write a pipeline that includes `filter()`, `group_by()` and the `select()`verb. 
+
+The block of code below will output the associated sharewomen value/percentage grouped by the major_category
+
+```{r}
+college_recent_grads %>%
+  group_by(major_category) %>%
+  summarize(mean(sharewomen)) 
+```
+
+Now lets practice!
+
+##Practice Grammer
+
+###Filter for the rows where the *major category* is *Business*
+
+```{r setup, include = FALSE}
+library(tidyverse)
+library(fivethirtyeight)
+library(ggthemes)
+```
+
+```{r q1, exercise = TRUE}
+college_recent_grads %>%
+  filter() #what goes inside the parenthesis? 
+```
+
+
+```{r q1-solution}
+college_recent_grads %>%
+  filter(major_category == "Business")
+```
+
+
+###Pipe from the data set college_recent_grads and one a function to show the columns: rank, major, major_category and total only
+
+```{r q2, exercise = TRUE}
+#write code here
+```
+
+```{r q2-hint-1}
+college_recent_grads %>%
+```
+
+```{r q2-hint-2}
+college_recent_grads %>%
+  select() #put columns inside the select()
+```
+
+```{r q2-solution}
+college_recent_grads %>%
+  select(rank, major, major_category, total)
+```
+
+###Display columns *major* and *total* and only show majors that fall in the *major category* Engineering
+
+```{r q3, exercise = TRUE}
+#write code here
+```
+
+```{r q3-hint-1}
+college_recent_grads %>% #pipe from data set
+```
+
+```{r q3-hint-2}
+college_recent_grads %>%
+  filter(major_category == "Engineering")
+```
+
+```{r q3-solution}
+college_recent_grads %>%
+  filter(major_category == "Engineering") %>%
+  select(major, total) 
+
+```
+
+##Data Graphics
+
+We can use the pipe operator (**%>%**) to create data visualizations specific to what we are looking for along with using the data wrangling functions and techniques we learned. We will be using the package ggplot2 which included in the Tidyverse package. 
+
+###Lets look at a simple example of a data graphic created using data wrangling:
+
+```{r}
+college_recent_grads %>% #piping from dataset
+  filter(major_category=="Communications & Journalism")%>% #using filter function
+  ggplot(aes(x = major, y = total)) + #creating data visualization
+  geom_col(fill = "light blue", color = "white") + #graph type
+  labs(x = "Majors Under Communications & Journalism", y = "total", subtitle = "Total Students")
+```
+
+As you can see, the code above displays a data visual of the total number of people in each Communications and Journalism major. Line one of the code is me piping from the data set, college_recent_grads, line two is using the filter function to filter the rows for all majors in the major category "Communications and Jounalism". The last two lines are creating the graph itself using the data we filtered. Please note that to connect the last 3 lines of code, we used **+** instead of the pipe operator. 
+
+What do we learn from this data visual? We can clearly see that Communications is the most popular major in the Communications and Journalism major category with more than 200000 total students. Mass Media on the other hand is the least popular major in this major category with just about under 50000 total students. 
+
+###Lets try doing something a little more complex. 
+
+```{r, warning = FALSE}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>% #using group_by() to group major categories
+  summarize(mean_sharewomen = mean(sharewomen))%>% #getting the mean of share women from each group category
+  ggplot(aes(x = major_category, y = mean_sharewomen)) + #creating plot
+  geom_col(fill = "light blue", color = "white") +
+  coord_flip() + #flip the axis
+  theme_fivethirtyeight() + #OPTIONAL: graph style using ggthemes package 
+  labs(x = "Major Categories", y = "Average Share Women", subtitle = "Proportion of Women across Major Categories")
+
+```
+
+As you can see above, this data graphic is more complex then the one we previously looked at. We used the data wrangling functions in dyplr `group_by()` and `summarize()` to get the data we needed to make this graph. First we grouped by major categories and from there, we took the average of the proportions from each major within its major category. This allowed us to use the aesthetics major category and mean_sharewomen to get the proportions of women across each major category. After the data wrangling was done, connected the ggplot to make the graphic.
+
+What do we learn from this data visual? We can see that Psycholody & Social Science, Interdiciplinary, Health, and Education are amoung the top 4 major categories with the most students (according to this data specifically). 
+
+###Lets try making a data graphic of boxplots through data wrangling
+
+```{r, warning = FALSE}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>% 
+  ggplot(aes(x = major_category, y=sharewomen)) + #creating plot
+  geom_boxplot(fill = "light blue") + #boxplot
+  coord_flip() +
+  theme_fivethirtyeight() + #OPTIONAL: graph style using ggthemes package 
+  labs(subtitle = "Proportion of Women across Major Categories")
+```
+
+This block of code is very similar to the data graphic we just did. Notice that we did not include the summarize() function here. Since we are creating boxplots of the distributions of the proportion of women (sharewomen) across each major category, we do not need to find the average of each proportion, if we did, we would not get a distribution of values we would only get an average value per major category. 
+
+What can we learn from this? As you can see Education, Health, Interdiciplanary and Social work are the 4 major categories with the highest median proportion of women. Industrial Arts & Consumer Services has the widest spread and it has the lowest, along side Engineering, proportion of women in the major category. 
+
+Since health is one of the major categories with the most majors, lets make a plot of the proportions of women in health majors:
+
+```{r, warning = FALSE}
+college_recent_grads %>% #piping from dataset
+  filter(major_category=="Health") %>% 
+  ggplot(aes(x = major, y=sharewomen)) + #creating plot
+  geom_col(fill = "light blue") + #boxplot
+  coord_flip() +
+  theme_fivethirtyeight() + #OPTIONAL: graph style using ggthemes package 
+  labs(subtitle = "Proportion of Women in Health Majors")
+```
+
+Since Industrial Arts & Consumer Services has the widest spread, lets make a plot of the proportions of women in majors under Consumer Services:
+
+```{r, warning = FALSE}
+college_recent_grads %>% #piping from dataset
+  filter(major_category=="Industrial Arts & Consumer Services") %>% 
+  ggplot(aes(x = major, y=sharewomen)) + #creating plot
+  geom_col(fill = "light blue") + #boxplot
+  coord_flip() +
+  theme_fivethirtyeight() + #OPTIONAL: graph style using ggthemes package 
+  labs(subtitle = "Proportion of Women in Industrial Arts & Consumer Services Majors")
+```
+
+After looking at the data visual, I now understand why Industrial Arts & Consumer Services has such a wide spread. As you can see, the major Family and Consumer Sciences has the highest proportion at over 80%, Physical Fitness Parks Recreation and Leisure and Cosmetology Services and Culinary arts are around 50% while the rest is much less.
+
+##Practice Data Graphics
+
+Now that you have seen examples of data graphics though the use of data wrangling, its time to practice.
+
+###Display the average unemployment rate across the major_categories. Use geom_col() (Note: you do not need to use a ggtheme())
+
+```{r q4, exercise = TRUE}
+#write code here
+```
+
+```{r q4-hint-1}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) #use group_by to group major categories
+```
+
+```{r q4-hint-2}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>%
+  summarize(mean_unemp = mean(unemployment_rate)) #you do not need to use the name mean_unemp for the variable, call it anything you want!
+```
+
+```{r q4-solution}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>%
+  summarize(mean_unemp = mean(unemployment_rate)) %>%
+  ggplot(aes(x = major_category, y = mean_unemp)) + #remember to use +
+  geom_col() 
+```
+
+###Display a boxplot of the distributions of median salarys across major categories (Note: you do not need to use a ggtheme())
+
+```{r q5, exercise = TRUE}
+#write code here
+```
+
+```{r q5-hint-1}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>% #group by major categories
+```
+
+```{r q5-hint-2}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>%
+  ggplot(aes(x = major_category, y=sharewomen)) + #creating plot 
+```
+
+```{r q5-solution}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>% 
+  ggplot(aes(x = major_category, y=sharewomen)) +
+  geom_boxplot() + #boxplot
+  coord_flip() #OPTIONAL: flip the axis so it is easier to visualize
+```
+
+##Review
+
+```{r review, echo = FALSE}
+quiz(caption = "Lets review what we learned",
+     question("Which verb from the dyplr package would you use to get specific columns from a data set?",
+         answer("mutate", message = "mutate is used to create new columns in our dataset"),
+         answer("select", correct = TRUE), 
+         answer("distinct", message = "distinct is used to display unique rows"),
+         answer("filter", message = "filter is used to filter rows")
+         ),
+     question("Which verb from the dyplr package would you use to create a new columns in data set?",
+         answer("mutate",correct = TRUE),
+         answer("arrange", message = "arrange is used to re-order/arrange rows"), 
+         answer("group_by()", message = "group_by() is used for group operations"),
+         answer("filter", message = "filter is used to filter rows")
+         )
+
+)
+```
+
+
+####Make a boxplot of the distribution of employed individuals in each major category
+
+```{r review2, exercise = TRUE}
+#write code here
+```
+
+```{r review2-hint-1}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>% #group by major categories
+```
+
+```{r review2-hint-2}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>%
+  ggplot(aes(x = major_category, y=employed)) + #creating plot 
+```
+
+```{r review2-solution}
+college_recent_grads %>% #piping from dataset
+  group_by(major_category) %>% 
+  ggplot(aes(x = major_category, y=employed)) +
+  geom_boxplot() + #boxplot
+  coord_flip() + #OPTIONAL: flip the axis so it is easier to visualize
+  labs(x = "Employed", y= "Major Category", title = "Employed Distribution amongst Major Categories")
+```
+
+####Create anything you want!
+
+```{r try, exercise = TRUE}
+#write code here
+```
